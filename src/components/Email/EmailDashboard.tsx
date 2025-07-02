@@ -38,84 +38,8 @@ export const EmailDashboard: React.FC = () => {
   }, []);
 
   const loadEmails = () => {
-    // Mock emails for demo
-    const mockEmails: Email[] = [
-      {
-        id: '1',
-        subject: 'Meeting Summary: Q4 Planning Session',
-        body: `Hi team,
-
-Thank you for joining today's Q4 planning session.
-
-Key Discussion Points:
-• Budget allocation for next quarter
-• New feature roadmap priorities
-• Team expansion plans
-
-Action Items:
-• John to prepare budget breakdown by Friday
-• Sarah to coordinate with design team
-• Schedule follow-up meeting for next week
-
-Please let me know if I missed anything.
-
-Best regards,
-[Your Name]`,
-        recipients: ['john@company.com', 'sarah@company.com'],
-        status: 'pending_approval',
-        priority: 'medium',
-        meetingId: 'meeting_1',
-        emailType: 'meeting_summary',
-        generatedAt: new Date(Date.now() - 3600000),
-        aiGenerated: true
-      },
-      {
-        id: '2',
-        subject: 'Action Items from Daily Standup',
-        body: `Hi there,
-
-Following up on our standup today, here are the action items:
-
-• Complete user authentication feature
-• Review pull request #123
-• Update documentation for API endpoints
-
-Please confirm receipt and let me know if you have questions.
-
-Thanks!
-[Your Name]`,
-        recipients: ['mike@company.com'],
-        status: 'pending_approval',
-        priority: 'high',
-        meetingId: 'meeting_2',
-        emailType: 'action_items',
-        generatedAt: new Date(Date.now() - 1800000),
-        aiGenerated: true
-      },
-      {
-        id: '3',
-        subject: 'Thank you for joining our meeting',
-        body: `Dear colleagues,
-
-Thank you for taking the time to join our meeting on "Product Strategy Review" today. Your insights were valuable.
-
-We'll follow up with the meeting notes and next steps shortly.
-
-Looking forward to our continued collaboration.
-
-Best regards,
-[Your Name]`,
-        recipients: ['client@external.com'],
-        status: 'sent',
-        priority: 'low',
-        meetingId: 'meeting_3',
-        emailType: 'thank_you',
-        generatedAt: new Date(Date.now() - 7200000),
-        aiGenerated: true
-      }
-    ];
-
-    setEmails(mockEmails);
+    // Load emails from app state
+    setEmails(state.emails);
   };
 
   const filteredEmails = emails.filter(email => {

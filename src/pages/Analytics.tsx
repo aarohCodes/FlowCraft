@@ -15,30 +15,21 @@ import { useApp } from '../contexts/AppContext';
 export const Analytics: React.FC = () => {
   const { state } = useApp();
 
-  // Mock analytics data
-  const analyticsData = {
-    weeklyProgress: [
-      { day: 'Mon', tasks: 8, meetings: 3, flashcards: 15 },
-      { day: 'Tue', tasks: 12, meetings: 2, flashcards: 20 },
-      { day: 'Wed', tasks: 6, meetings: 4, flashcards: 12 },
-      { day: 'Thu', tasks: 15, meetings: 1, flashcards: 25 },
-      { day: 'Fri', tasks: 10, meetings: 5, flashcards: 18 },
-      { day: 'Sat', tasks: 5, meetings: 0, flashcards: 8 },
-      { day: 'Sun', tasks: 3, meetings: 1, flashcards: 10 },
-    ],
-    monthlyStats: {
-      tasksCompleted: 147,
-      meetingsAttended: 23,
-      flashcardsStudied: 342,
-      socialPosts: 28,
-    },
-    productivity: {
-      averageTaskTime: '2.3 hours',
-      meetingEfficiency: '87%',
-      studyAccuracy: '92%',
-      contentEngagement: '4.2%',
-    }
-  };
+  // Calculate real analytics from state data
+  const totalTasks = state.tasks.length;
+  const completedTasks = state.tasks.filter(task => task.completed).length;
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  
+  const totalFlashcards = state.flashcards.length;
+  const totalAttempts = state.flashcards.reduce((sum, card) => sum + card.totalAttempts, 0);
+  const correctAttempts = state.flashcards.reduce((sum, card) => sum + card.correctCount, 0);
+  const flashcardAccuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0;
+  
+  const totalMeetings = state.meetings.length;
+  const completedMeetings = state.meetings.filter(meeting => meeting.status === 'completed').length;
+  
+  const totalEmails = state.emails.length;
+  const sentEmails = state.emails.filter(email => email.status === 'sent').length;
 
   return (
     <div className="space-y-8">
@@ -71,10 +62,10 @@ export const Analytics: React.FC = () => {
                 Tasks This Month
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {analyticsData.monthlyStats.tasksCompleted}
+                {totalTasks}
               </p>
               <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                +12% from last month
+                {completionRate}% completed
               </p>
             </div>
             <Target className="w-8 h-8 text-blue-500" />
@@ -93,10 +84,10 @@ export const Analytics: React.FC = () => {
                 Meetings Attended
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {analyticsData.monthlyStats.meetingsAttended}
+                {completedMeetings}
               </p>
               <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                +5% from last month
+                {Math.round((completedMeetings / totalMeetings) * 100)}% completed
               </p>
             </div>
             <Users className="w-8 h-8 text-green-500" />
@@ -115,10 +106,10 @@ export const Analytics: React.FC = () => {
                 Flashcards Studied
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {analyticsData.monthlyStats.flashcardsStudied}
+                {totalFlashcards}
               </p>
               <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                +23% from last month
+                {flashcardAccuracy}% accuracy
               </p>
             </div>
             <Award className="w-8 h-8 text-orange-500" />
@@ -137,10 +128,10 @@ export const Analytics: React.FC = () => {
                 Social Posts
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {analyticsData.monthlyStats.socialPosts}
+                {sentEmails}
               </p>
               <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                +18% from last month
+                {Math.round((sentEmails / totalEmails) * 100)}% sent
               </p>
             </div>
             <TrendingUp className="w-8 h-8 text-purple-500" />
@@ -160,46 +151,24 @@ export const Analytics: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
             Weekly Activity Overview
           </h3>
-          <div className="space-y-4">
-            {analyticsData.weeklyProgress.map((day, index) => (
-              <div key={day.day} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">{day.day}</span>
-                  <span className="text-gray-900 dark:text-white font-medium">
-                    {day.tasks + day.meetings + day.flashcards} activities
-                  </span>
+                      <div className="space-y-4">
+             {state.tasks.slice(0, 7).map((task, index) => (
+               <div key={task.id} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                   <span className="text-gray-600 dark:text-gray-400">{task.title}</span>
+                   <span className="text-gray-900 dark:text-white font-medium">
+                     {task.completed ? 'Completed' : 'In Progress'}
+                   </span>
+                  </div>
+                  <div className="flex space-x-1 h-2">
+                   <div 
+                     className="bg-blue-500 rounded-sm"
+                     style={{ width: `${task.completed ? 100 : 50}%` }}
+                   ></div>
+                  </div>
                 </div>
-                <div className="flex space-x-1 h-2">
-                  <div 
-                    className="bg-blue-500 rounded-sm"
-                    style={{ width: `${(day.tasks / 20) * 100}%` }}
-                  ></div>
-                  <div 
-                    className="bg-green-500 rounded-sm"
-                    style={{ width: `${(day.meetings / 20) * 100}%` }}
-                  ></div>
-                  <div 
-                    className="bg-orange-500 rounded-sm"
-                    style={{ width: `${(day.flashcards / 20) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center justify-center space-x-6 mt-6 text-xs">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
-              <span className="text-gray-600 dark:text-gray-400">Tasks</span>
+              ))}
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
-              <span className="text-gray-600 dark:text-gray-400">Meetings</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-orange-500 rounded-sm"></div>
-              <span className="text-gray-600 dark:text-gray-400">Flashcards</span>
-            </div>
-          </div>
         </motion.div>
 
         {/* Productivity Metrics */}
@@ -219,7 +188,7 @@ export const Analytics: React.FC = () => {
                 <span className="text-gray-700 dark:text-gray-300">Avg. Task Time</span>
               </div>
               <span className="text-gray-900 dark:text-white font-semibold">
-                {analyticsData.productivity.averageTaskTime}
+                {totalTasks > 0 ? Math.round(totalTasks / 7) : 0} tasks/day
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -228,7 +197,7 @@ export const Analytics: React.FC = () => {
                 <span className="text-gray-700 dark:text-gray-300">Meeting Efficiency</span>
               </div>
               <span className="text-gray-900 dark:text-white font-semibold">
-                {analyticsData.productivity.meetingEfficiency}
+                {totalMeetings > 0 ? Math.round((completedMeetings / totalMeetings) * 100) : 0}%
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -237,16 +206,16 @@ export const Analytics: React.FC = () => {
                 <span className="text-gray-700 dark:text-gray-300">Study Accuracy</span>
               </div>
               <span className="text-gray-900 dark:text-white font-semibold">
-                {analyticsData.productivity.studyAccuracy}
+                {flashcardAccuracy}%
               </span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <TrendingUp className="w-5 h-5 text-purple-500" />
-                <span className="text-gray-700 dark:text-gray-300">Content Engagement</span>
+                <span className="text-gray-700 dark:text-gray-300">Email Success Rate</span>
               </div>
               <span className="text-gray-900 dark:text-white font-semibold">
-                {analyticsData.productivity.contentEngagement}
+                {totalEmails > 0 ? Math.round((sentEmails / totalEmails) * 100) : 0}%
               </span>
             </div>
           </div>

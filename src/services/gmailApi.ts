@@ -25,6 +25,7 @@ class GmailApiService {
   private refreshToken: string | null = null;
   private tokenExpiry: number | null = null;
   private isConnected: boolean = false;
+  private baseUrl: string = 'https://gmail.googleapis.com/gmail/v1';
 
   constructor() {
     // Load saved tokens from localStorage
@@ -185,112 +186,50 @@ class GmailApiService {
   }
 
   // Make authenticated requests to Gmail API
-  private async makeRequest(endpoint: string, options: any = {}): Promise<any> {
-    if (!this.accessToken) {
-      throw new Error('Not authenticated with Gmail');
+  private async makeRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
+    const accessToken = localStorage.getItem('gmail_access_token');
+    
+    if (!accessToken || accessToken.startsWith('mock_access_token_')) {
+      // Return empty results for demo mode or when not connected
+      return this.getEmptyResponse(endpoint);
     }
 
-    // Return mock data for demo
-    if (this.accessToken === 'mock_gmail_access_token') {
-      return this.getMockData(endpoint, options);
-    }
-
-    // Try to refresh token if needed
-    await this.refreshTokenIfNeeded();
+    const url = `${this.baseUrl}${endpoint}`;
+    const headers = {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
 
     try {
-      const response = await axios({
-        method: options.method || 'GET',
-        url: `https://gmail.googleapis.com/gmail/v1${endpoint}`,
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
-          ...options.headers
-        },
-        data: options.body,
-        params: options.params
+      const response = await fetch(url, {
+        ...options,
+        headers,
       });
-      
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        // Token expired, try to refresh
-        const refreshed = await this.refreshTokenIfNeeded();
-        if (refreshed) {
-          // Retry with new token
-          const response = await axios({
-            method: options.method || 'GET',
-            url: `https://gmail.googleapis.com/gmail/v1${endpoint}`,
-            headers: {
-              'Authorization': `Bearer ${this.accessToken}`,
-              'Content-Type': 'application/json',
-              ...options.headers
-            },
-            data: options.body,
-            params: options.params
-          });
-          
-          return response.data;
-        }
+
+      if (!response.ok) {
+        throw new Error(`Gmail API error: ${response.status} ${response.statusText}`);
       }
-      
+
+      return await response.json();
+    } catch (error) {
+      console.error('Gmail API request failed:', error);
       throw error;
     }
   }
 
-  // Mock data for demo purposes
-  private getMockData(endpoint: string, options: any = {}): any {
+  private getEmptyResponse(endpoint: string): any {
+    // Return appropriate empty responses based on endpoint
     if (endpoint === '/users/me/profile') {
-      return {
-        emailAddress: 'demo@example.com',
-        messagesTotal: 1250,
-        threadsTotal: 890
-      };
+      return null; // No user data when not connected
     }
 
-    if (endpoint === '/users/me/messages' && options.method === 'POST') {
-      return {
-        id: `mock_email_${Date.now()}`,
-        threadId: `thread_${Date.now()}`,
-        labelIds: ['SENT']
-      };
-    }
-
-    if (endpoint === '/users/me/messages' && options.method === 'GET') {
-      return {
-        messages: [
-          {
-            id: `mock_email_1`,
-            threadId: 'thread_1',
-            labelIds: ['INBOX', 'UNREAD']
-          },
-          {
-            id: `mock_email_2`,
-            threadId: 'thread_2',
-            labelIds: ['INBOX']
-          }
-        ],
-        nextPageToken: 'mock_next_page_token'
-      };
+    if (endpoint === '/users/me/messages') {
+      return { messages: [] };
     }
 
     if (endpoint.startsWith('/users/me/messages/') && !endpoint.includes('send')) {
-      return {
-        id: endpoint.split('/').pop(),
-        threadId: 'thread_1',
-        labelIds: ['INBOX'],
-        snippet: 'This is a preview of the email content...',
-        payload: {
-          headers: [
-            { name: 'From', value: 'sender@example.com' },
-            { name: 'To', value: 'demo@example.com' },
-            { name: 'Subject', value: 'Meeting Summary: Project Update' }
-          ],
-          body: {
-            data: btoa('This is the full content of the email. It includes details about the meeting and next steps.')
-          }
-        }
-      };
+      return null; // No message data when not connected
     }
 
     return {};
@@ -426,12 +365,12 @@ Best regards,
 
   // Get messages
   async getMessages(maxResults: number = 10, query: string = ''): Promise<GmailMessage[]> {
-    const params: any = { maxResults };
+    const queryParams = new URLSearchParams({ maxResults: maxResults.toString() });
     if (query) {
-      params.q = query;
+      queryParams.append('q', query);
     }
     
-    const response = await this.makeRequest('/users/me/messages', { params });
+    const response = await this.makeRequest(`/users/me/messages?${queryParams.toString()}`);
     
     // For real implementation, you'd fetch each message's details
     // For demo, we'll return simplified messages

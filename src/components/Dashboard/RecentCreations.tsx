@@ -46,99 +46,6 @@ export const RecentCreations: React.FC<RecentCreationsProps> = ({ onAddTask, onC
     .slice(0, 5);
   
   const recentFlashcards = state.flashcards.slice(-5).reverse();
-  
-  // Mock recent quizzes (since we don't have quiz data structure yet)
-  const recentQuizzes = [
-    { 
-      id: '1', 
-      title: 'JavaScript Fundamentals Quiz', 
-      createdAt: new Date(Date.now() - 3600000), 
-      questions: 10,
-      difficulty: 'medium',
-      category: 'Programming',
-      completed: false,
-      score: null
-    },
-    { 
-      id: '2', 
-      title: 'React Hooks Quiz', 
-      createdAt: new Date(Date.now() - 7200000), 
-      questions: 8,
-      difficulty: 'hard',
-      category: 'React',
-      completed: true,
-      score: 85
-    },
-    { 
-      id: '3', 
-      title: 'CSS Flexbox Quiz', 
-      createdAt: new Date(Date.now() - 14400000), 
-      questions: 12,
-      difficulty: 'easy',
-      category: 'CSS',
-      completed: false,
-      score: null
-    },
-  ];
-
-  // Mock recent emails for professional mode
-  const recentEmails = [
-    {
-      id: '1',
-      subject: 'Meeting Summary: Q4 Planning',
-      recipients: ['team@company.com'],
-      status: 'sent',
-      createdAt: new Date(Date.now() - 1800000),
-      type: 'meeting_summary'
-    },
-    {
-      id: '2',
-      subject: 'Action Items Follow-up',
-      recipients: ['john@company.com'],
-      status: 'pending_approval',
-      createdAt: new Date(Date.now() - 3600000),
-      type: 'action_items'
-    },
-    {
-      id: '3',
-      subject: 'Client Thank You Note',
-      recipients: ['client@external.com'],
-      status: 'draft',
-      createdAt: new Date(Date.now() - 7200000),
-      type: 'thank_you'
-    }
-  ];
-
-  // Mock recent meetings for professional mode
-  const recentMeetings = [
-    {
-      id: '1',
-      title: 'Weekly Team Sync',
-      date: new Date(Date.now() + 3600000),
-      duration: 30,
-      participants: 5,
-      status: 'scheduled',
-      platform: 'zoom'
-    },
-    {
-      id: '2',
-      title: 'Client Presentation',
-      date: new Date(Date.now() - 3600000),
-      duration: 60,
-      participants: 8,
-      status: 'completed',
-      platform: 'google-meet'
-    },
-    {
-      id: '3',
-      title: 'Project Review',
-      date: new Date(Date.now() - 7200000),
-      duration: 45,
-      participants: 6,
-      status: 'completed',
-      platform: 'teams'
-    }
-  ];
 
   const toggleTask = (taskId: string) => {
     const task = state.tasks.find(t => t.id === taskId);
@@ -198,14 +105,14 @@ export const RecentCreations: React.FC<RecentCreationsProps> = ({ onAddTask, onC
   // Define tabs based on user role
   const professionalTabs = [
     { id: 'tasks', label: 'Tasks', icon: FileText, count: recentTasks.length },
-    { id: 'emails', label: 'Emails', icon: Mail, count: recentEmails.length },
-    { id: 'meetings', label: 'Meetings', icon: Users, count: recentMeetings.length },
+    { id: 'emails', label: 'Emails', icon: Mail, count: 0 },
+    { id: 'meetings', label: 'Meetings', icon: Users, count: 0 },
   ];
 
   const studentTabs = [
     { id: 'tasks', label: 'Tasks', icon: FileText, count: recentTasks.length },
     { id: 'flashcards', label: 'Flashcards', icon: BookOpen, count: recentFlashcards.length },
-    { id: 'quizzes', label: 'Quizzes', icon: HelpCircle, count: recentQuizzes.length },
+    { id: 'quizzes', label: 'Quizzes', icon: HelpCircle, count: 0 },
   ];
 
   const tabs = state.userRole === 'professional' ? professionalTabs : studentTabs;
@@ -295,13 +202,14 @@ export const RecentCreations: React.FC<RecentCreationsProps> = ({ onAddTask, onC
                   hover
                   className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
                 />
-                <IconWrapper
-                  icon={Trash2}
-                  size={16}
-                  hover
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => deleteTask(task.id)}
                   className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
-                />
+                >
+                  <Trash2 size={16} />
+                </motion.button>
               </div>
             </div>
           </motion.div>
@@ -420,19 +328,21 @@ export const RecentCreations: React.FC<RecentCreationsProps> = ({ onAddTask, onC
               </div>
 
               <div className="flex items-center space-x-2 ml-4">
-                <IconWrapper
-                  icon={Eye}
-                  size={16}
-                  hover
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => handleFlashcardClick(flashcard.id)}
                   className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
-                />
-                <IconWrapper
-                  icon={Play}
-                  size={16}
-                  hover
+                >
+                  <Eye size={16} />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200"
-                />
+                >
+                  <Play size={16} />
+                </motion.button>
               </div>
             </div>
           </motion.div>
@@ -464,262 +374,19 @@ export const RecentCreations: React.FC<RecentCreationsProps> = ({ onAddTask, onC
 
   const renderQuizContent = () => (
     <div className="space-y-4">
-      {recentQuizzes.length > 0 ? (
-        recentQuizzes.map((quiz, index) => (
-          <motion.div
-            key={quiz.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ 
-              delay: index * 0.1,
-              type: "spring",
-              stiffness: 200,
-              damping: 15
-            }}
-            className="p-5 bg-white dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-medium transition-all duration-300"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <Typography variant="body1" weight="semibold" className="text-gray-900 dark:text-white mb-3">
-                  {quiz.title}
-                </Typography>
-                <div className="flex items-center space-x-4 mb-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(quiz.difficulty)}`}>
-                    {quiz.difficulty}
-                  </span>
-                  <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
-                    {quiz.category}
-                  </Typography>
-                  <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
-                    <HelpCircle size={12} />
-                    <span>{quiz.questions} questions</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-6">
-                    <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
-                      Created {formatDistanceToNow(quiz.createdAt, { addSuffix: true })}
-                    </Typography>
-                    {quiz.completed && quiz.score !== null && (
-                      <div className="flex items-center space-x-1">
-                        <Target size={12} className="text-green-500" />
-                        <Typography variant="caption" weight="semibold" className="text-green-600 dark:text-green-400">
-                          Score: {quiz.score}%
-                        </Typography>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    {quiz.completed ? (
-                      <AnimatedButton
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => startQuiz(quiz.id)}
-                        icon={<RotateCcw size={14} />}
-                      >
-                        Retake
-                      </AnimatedButton>
-                    ) : (
-                      <AnimatedButton
-                        variant="success"
-                        size="sm"
-                        onClick={() => startQuiz(quiz.id)}
-                        icon={<Play size={14} />}
-                      >
-                        Start Quiz
-                      </AnimatedButton>
-                    )}
-                    
-                    <IconWrapper
-                      icon={Edit3}
-                      size={16}
-                      hover
-                      className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))
-      ) : (
-        <div className="text-center py-12">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          >
-            <HelpCircle size={64} className="mx-auto text-gray-400 mb-6" />
-            <Typography variant="body1" className="text-gray-600 dark:text-gray-400 mb-6">
-              No quizzes created yet
-            </Typography>
-            <AnimatedButton
-              variant="success"
-              gradient
-              icon={<HelpCircle size={16} />}
-            >
-              Generate Your First Quiz
-            </AnimatedButton>
-          </motion.div>
-        </div>
-      )}
+      {/* Quiz content will be updated based on actual quiz data */}
     </div>
   );
 
   const renderEmailContent = () => (
     <div className="space-y-4">
-      {recentEmails.length > 0 ? (
-        recentEmails.map((email, index) => (
-          <motion.div
-            key={email.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ 
-              delay: index * 0.1,
-              type: "spring",
-              stiffness: 200,
-              damping: 15
-            }}
-            className="p-5 bg-white dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-medium transition-all duration-300"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <Typography variant="body1" weight="semibold" className="text-gray-900 dark:text-white mb-3">
-                  {email.subject}
-                </Typography>
-                <div className="flex items-center space-x-4 mb-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(email.status)}`}>
-                    {email.status.replace('_', ' ')}
-                  </span>
-                  <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
-                    To: {email.recipients.join(', ')}
-                  </Typography>
-                </div>
-                <div className="flex items-center justify-between">
-                  <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
-                    {formatDistanceToNow(email.createdAt, { addSuffix: true })}
-                  </Typography>
-                  <div className="flex items-center space-x-2">
-                    <IconWrapper
-                      icon={Eye}
-                      size={16}
-                      hover
-                      className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
-                    />
-                    <IconWrapper
-                      icon={Edit3}
-                      size={16}
-                      hover
-                      className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))
-      ) : (
-        <div className="text-center py-12">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          >
-            <Mail size={64} className="mx-auto text-gray-400 mb-6" />
-            <Typography variant="body1" className="text-gray-600 dark:text-gray-400 mb-6">
-              No emails generated yet
-            </Typography>
-            <AnimatedButton
-              variant="primary"
-              gradient
-              icon={<Mail size={16} />}
-            >
-              Generate from Meeting
-            </AnimatedButton>
-          </motion.div>
-        </div>
-      )}
+      {/* Email content will be updated based on actual email data */}
     </div>
   );
 
   const renderMeetingContent = () => (
     <div className="space-y-4">
-      {recentMeetings.length > 0 ? (
-        recentMeetings.map((meeting, index) => (
-          <motion.div
-            key={meeting.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ 
-              delay: index * 0.1,
-              type: "spring",
-              stiffness: 200,
-              damping: 15
-            }}
-            className="p-5 bg-white dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-medium transition-all duration-300"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <Typography variant="body1" weight="semibold" className="text-gray-900 dark:text-white mb-3">
-                  {meeting.title}
-                </Typography>
-                <div className="flex items-center space-x-4 mb-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(meeting.status)}`}>
-                    {meeting.status}
-                  </span>
-                  <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
-                    {meeting.participants} participants
-                  </Typography>
-                  <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
-                    {meeting.duration} min
-                  </Typography>
-                </div>
-                <div className="flex items-center justify-between">
-                  <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
-                    {formatDistanceToNow(meeting.date, { addSuffix: true })}
-                  </Typography>
-                  <div className="flex items-center space-x-2">
-                    <IconWrapper
-                      icon={BarChart3}
-                      size={16}
-                      hover
-                      className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
-                    />
-                    <IconWrapper
-                      icon={Play}
-                      size={16}
-                      hover
-                      className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))
-      ) : (
-        <div className="text-center py-12">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          >
-            <Users size={64} className="mx-auto text-gray-400 mb-6" />
-            <Typography variant="body1" className="text-gray-600 dark:text-gray-400 mb-6">
-              No meetings scheduled yet
-            </Typography>
-            <AnimatedButton
-              variant="primary"
-              gradient
-              icon={<Calendar size={16} />}
-            >
-              Schedule Meeting
-            </AnimatedButton>
-          </motion.div>
-        </div>
-      )}
+      {/* Meeting content will be updated based on actual meeting data */}
     </div>
   );
 
@@ -735,21 +402,23 @@ export const RecentCreations: React.FC<RecentCreationsProps> = ({ onAddTask, onC
           </Typography>
         </div>
         <div className="flex items-center space-x-3">
-          <IconWrapper
-            icon={Plus}
-            size={16}
-            hover
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onAddTask}
             className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
-          />
+          >
+            <Plus size={16} />
+          </motion.button>
           {state.userRole === 'student' && (
-            <IconWrapper
-              icon={BookOpen}
-              size={16}
-              hover
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={onCreateFlashcard}
               className="p-2 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-all duration-200"
-            />
+            >
+              <BookOpen size={16} />
+            </motion.button>
           )}
         </div>
       </div>
@@ -827,9 +496,9 @@ export const RecentCreations: React.FC<RecentCreationsProps> = ({ onAddTask, onC
           <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
             {activeTab === 'tasks' && `${recentTasks.filter(t => !t.completed).length} active tasks`}
             {activeTab === 'flashcards' && `${recentFlashcards.length} flashcards ready to study`}
-            {activeTab === 'quizzes' && `${recentQuizzes.filter(q => !q.completed).length} quizzes pending`}
-            {activeTab === 'emails' && `${recentEmails.filter(e => e.status === 'pending_approval').length} emails pending approval`}
-            {activeTab === 'meetings' && `${recentMeetings.filter(m => m.status === 'scheduled').length} meetings scheduled`}
+            {activeTab === 'quizzes' && 'No quizzes created yet'}
+            {activeTab === 'emails' && 'No emails generated yet'}
+            {activeTab === 'meetings' && 'No meetings scheduled yet'}
           </Typography>
           <motion.button
             whileHover={{ scale: 1.05, x: 2 }}

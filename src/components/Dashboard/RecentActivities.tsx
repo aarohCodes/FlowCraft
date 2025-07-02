@@ -1,14 +1,20 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CheckCircle, 
   Clock, 
   MessageSquare, 
   BookOpen,
   Calendar,
-  TrendingUp
+  TrendingUp,
+  Plus,
+  Activity
 } from 'lucide-react';
+import { useApp } from '../../contexts/AppContext';
 import { formatDistanceToNow } from 'date-fns';
+import { AnimatedCard } from '../UI/AnimatedCard';
+import { AnimatedButton } from '../UI/AnimatedButton';
+import { Typography } from '../UI/Typography';
 
 interface Activity {
   id: string;
@@ -18,49 +24,6 @@ interface Activity {
   timestamp: Date;
   icon: 'check' | 'clock' | 'message' | 'book' | 'calendar' | 'trending';
 }
-
-const activities: Activity[] = [
-  {
-    id: '1',
-    type: 'task',
-    title: 'Task Completed',
-    description: 'Update project documentation',
-    timestamp: new Date(Date.now() - 3600000),
-    icon: 'check',
-  },
-  {
-    id: '2',
-    type: 'meeting',
-    title: 'Meeting Scheduled',
-    description: 'Weekly Team Sync in 1 hour',
-    timestamp: new Date(Date.now() - 1800000),
-    icon: 'calendar',
-  },
-  {
-    id: '3',
-    type: 'flashcard',
-    title: 'Flashcard Created',
-    description: 'Software Architecture concepts',
-    timestamp: new Date(Date.now() - 7200000),
-    icon: 'book',
-  },
-  {
-    id: '4',
-    type: 'social',
-    title: 'Tweet Drafted',
-    description: 'Productivity tips post ready',
-    timestamp: new Date(Date.now() - 10800000),
-    icon: 'message',
-  },
-  {
-    id: '5',
-    type: 'achievement',
-    title: 'Goal Achievement',
-    description: 'Completed 50 flashcard reviews',
-    timestamp: new Date(Date.now() - 14400000),
-    icon: 'trending',
-  },
-];
 
 const iconComponents = {
   check: CheckCircle,
@@ -81,6 +44,65 @@ const iconColors = {
 };
 
 export const RecentActivities: React.FC = () => {
+  const { state } = useApp();
+
+  // Generate real activities from state data
+  const generateActivities = (): Activity[] => {
+    const activities: Activity[] = [];
+
+    // Add recent task completions
+    const recentCompletedTasks = state.tasks
+      .filter(task => task.completed)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3);
+
+    recentCompletedTasks.forEach(task => {
+      activities.push({
+        id: `task-${task.id}`,
+        type: 'task',
+        title: 'Task Completed',
+        description: task.title,
+        timestamp: task.createdAt,
+        icon: 'check'
+      });
+    });
+
+    // Add recent meetings
+    const recentMeetings = state.meetings
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 2);
+
+    recentMeetings.forEach(meeting => {
+      activities.push({
+        id: `meeting-${meeting.id}`,
+        type: 'meeting',
+        title: 'Meeting Scheduled',
+        description: meeting.title,
+        timestamp: meeting.date,
+        icon: 'calendar'
+      });
+    });
+
+    // Add recent flashcards (using current date since Flashcard doesn't have createdAt)
+    const recentFlashcards = state.flashcards.slice(0, 2);
+
+    recentFlashcards.forEach(flashcard => {
+      activities.push({
+        id: `flashcard-${flashcard.id}`,
+        type: 'flashcard',
+        title: 'Flashcard Created',
+        description: flashcard.question.substring(0, 50) + (flashcard.question.length > 50 ? '...' : ''),
+        timestamp: new Date(), // Use current date since Flashcard doesn't have createdAt
+        icon: 'book'
+      });
+    });
+
+    // Sort all activities by timestamp
+    return activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, 5);
+  };
+
+  const activities = generateActivities();
+
   return (
     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">

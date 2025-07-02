@@ -8,15 +8,15 @@ export const Education: React.FC = () => {
   const { state } = useApp();
   const [showQuizGenerator, setShowQuizGenerator] = useState(false);
 
+  // Calculate real study metrics from flashcards
   const totalFlashcards = state.flashcards.length;
-  const averageAccuracy = totalFlashcards > 0 
-    ? Math.round(state.flashcards.reduce((acc, card) => 
-        acc + (card.totalAttempts > 0 ? card.correctCount / card.totalAttempts : 0), 0
-      ) / totalFlashcards * 100)
-    : 0;
-
-  const studyStreak = 7; // Mock data
-  const cardsReviewedToday = 12; // Mock data
+  const totalAttempts = state.flashcards.reduce((sum, card) => sum + card.totalAttempts, 0);
+  const correctAttempts = state.flashcards.reduce((sum, card) => sum + card.correctCount, 0);
+  const accuracyRate = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0;
+  
+  // For now, we'll show basic stats since we don't have detailed study history
+  const studyStreak = 0; // Will be calculated from actual study history
+  const cardsReviewedToday = 0; // Will be calculated from actual study history
 
   const isQuizGeneratorUnlocked = state.isPremiumUser || state.unlockedFeatures.includes('Quiz Generator');
 
@@ -104,7 +104,7 @@ export const Education: React.FC = () => {
                 Average Accuracy
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {averageAccuracy}%
+                {accuracyRate}%
               </p>
             </div>
             <Target className="w-8 h-8 text-green-500" />
@@ -326,10 +326,10 @@ export const Education: React.FC = () => {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600 dark:text-gray-400">Accuracy This Week</span>
-                  <span className="text-gray-900 dark:text-white font-medium">{averageAccuracy}%</span>
+                  <span className="text-gray-900 dark:text-white font-medium">{accuracyRate}%</span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full" style={{ width: `${averageAccuracy}%` }}></div>
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full" style={{ width: `${accuracyRate}%` }}></div>
                 </div>
               </div>
             </div>

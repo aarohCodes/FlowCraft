@@ -349,121 +349,62 @@ class VideoMeetingApiService {
   }
 
   // Make API requests with platform-specific handling
-  private async makeRequest(platform: string, endpoint: string, options: any = {}): Promise<any> {
+  private async makeRequest(platform: string, endpoint: string, options: RequestInit = {}): Promise<any> {
     const accessToken = this.accessTokens.get(platform);
-    if (!accessToken) {
-      throw new Error(`Not authenticated with ${platform}`);
+    
+    if (!accessToken || accessToken.startsWith('mock_access_token_')) {
+      // Return empty results for demo mode or when not connected
+      return this.getEmptyResponse(platform, endpoint);
     }
 
-    // If using mock token, return mock data
-    if (accessToken.startsWith('mock_access_token_')) {
-      return this.getMockData(platform, endpoint);
-    }
-
-    // Try to refresh token if needed
-    await this.refreshTokenIfNeeded(platform);
-
-    let baseUrl: string;
-    let headers: Record<string, string> = {
-      'Authorization': `Bearer ${this.accessTokens.get(platform)}`,
+    const baseUrl = this.getBaseUrl(platform);
+    const url = `${baseUrl}${endpoint}`;
+    const headers = {
+      'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
-      ...options.headers
+      ...options.headers,
     };
 
-    switch (platform) {
-      case 'zoom':
-        baseUrl = 'https://api.zoom.us/v2';
-        break;
-      case 'google-meet':
-        baseUrl = 'https://www.googleapis.com/calendar/v3';
-        break;
-      case 'discord':
-        baseUrl = 'https://discord.com/api/v10';
-        break;
-      case 'microsoft-teams':
-        baseUrl = 'https://graph.microsoft.com/v1.0';
-        break;
-      default:
-        throw new Error(`Unsupported platform: ${platform}`);
-    }
-
     try {
-      const response = await axios({
-        method: options.method || 'GET',
-        url: `${baseUrl}${endpoint}`,
+      const response = await fetch(url, {
+        ...options,
         headers,
-        data: options.body,
-        params: options.params
       });
-      
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        // Token expired, try to refresh
-        const refreshed = await this.refreshTokenIfNeeded(platform);
-        if (refreshed) {
-          // Retry with new token
-          headers['Authorization'] = `Bearer ${this.accessTokens.get(platform)}`;
-          const response = await axios({
-            method: options.method || 'GET',
-            url: `${baseUrl}${endpoint}`,
-            headers,
-            data: options.body,
-            params: options.params
-          });
-          
-          return response.data;
-        }
+
+      if (!response.ok) {
+        throw new Error(`${platform} API error: ${response.status} ${response.statusText}`);
       }
-      
+
+      return await response.json();
+    } catch (error) {
+      console.error(`${platform} API request failed:`, error);
       throw error;
     }
   }
 
-  // Generate mock data for demo purposes
-  private getMockData(platform: string, endpoint: string): any {
-    const platformNames = {
-      'zoom': 'Zoom',
-      'google-meet': 'Google Meet',
-      'discord': 'Discord',
-      'microsoft-teams': 'Microsoft Teams'
-    };
+  private getBaseUrl(platform: string): string {
+    switch (platform) {
+      case 'zoom':
+        return 'https://api.zoom.us/v2';
+      case 'google-meet':
+        return 'https://www.googleapis.com/calendar/v3';
+      case 'discord':
+        return 'https://discord.com/api/v10';
+      case 'microsoft-teams':
+        return 'https://graph.microsoft.com/v1.0';
+      default:
+        throw new Error(`Unsupported platform: ${platform}`);
+    }
+  }
 
+  private getEmptyResponse(platform: string, endpoint: string): any {
+    // Return appropriate empty responses based on endpoint
     if (endpoint === '/users/me' || endpoint === '/me') {
-      return {
-        id: `mock_user_${platform}`,
-        first_name: 'Demo',
-        last_name: 'User',
-        email: `demo@${platform}.com`,
-        platform
-      };
+      return null; // No user data when not connected
     }
 
     if (endpoint.includes('/meetings') || endpoint.includes('/events')) {
-      return {
-        meetings: [
-          {
-            id: `mock_meeting_${platform}_1`,
-            topic: `${platformNames[platform as keyof typeof platformNames]} Team Standup`,
-            start_time: new Date().toISOString(),
-            duration: 30,
-            status: 'scheduled',
-            join_url: `https://${platform}.example.com/join/mock123456`,
-            host_id: `mock_user_${platform}`,
-            platform
-          },
-          {
-            id: `mock_meeting_${platform}_2`,
-            topic: `Product Review on ${platformNames[platform as keyof typeof platformNames]}`,
-            start_time: new Date(Date.now() + 3600000).toISOString(),
-            duration: 60,
-            status: 'scheduled',
-            join_url: `https://${platform}.example.com/join/mock789012`,
-            host_id: `mock_user_${platform}`,
-            platform
-          }
-        ]
-      };
+      return { meetings: [] };
     }
 
     return {};

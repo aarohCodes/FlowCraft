@@ -107,84 +107,9 @@ const initialState: AppState = {
       features: ['Auto-generate emails', 'Smart templates', 'Approval workflow'],
     },
   ],
-  tasks: [
-    {
-      id: '1',
-      title: 'Complete project proposal',
-      description: 'Finalize the project proposal document with all requirements',
-      completed: false,
-      priority: 'high',
-      category: 'Work',
-      dueDate: new Date(Date.now() + 86400000), // tomorrow
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      title: 'Review pull request #42',
-      description: 'Check the code changes and provide feedback',
-      completed: true,
-      priority: 'medium',
-      category: 'Development',
-      createdAt: new Date(Date.now() - 86400000), // yesterday
-    },
-    {
-      id: '3',
-      title: 'Prepare for client meeting',
-      description: 'Create slides and gather metrics for the presentation',
-      completed: false,
-      priority: 'high',
-      category: 'Work',
-      dueDate: new Date(Date.now() + 172800000), // day after tomorrow
-      createdAt: new Date(),
-    }
-  ],
-  meetings: [
-    {
-      id: '1',
-      title: 'Weekly Team Sync',
-      date: new Date(Date.now() + 3600000),
-      duration: 60,
-      participants: ['john@example.com', 'sarah@example.com', 'mike@example.com'],
-      status: 'scheduled',
-    },
-    {
-      id: '2',
-      title: 'Client Presentation',
-      date: new Date(Date.now() + 86400000),
-      duration: 90,
-      participants: ['client@company.com', 'team@ourcompany.com'],
-      status: 'scheduled',
-    },
-  ],
-  flashcards: [
-    {
-      id: '1',
-      question: 'What is the Single Responsibility Principle?',
-      answer: 'A class should have only one reason to change, meaning it should have only one responsibility.',
-      category: 'SOLID Principles',
-      difficulty: 'medium',
-      correctCount: 3,
-      totalAttempts: 5,
-    },
-    {
-      id: '2',
-      question: 'What are the benefits of microservices architecture?',
-      answer: 'Independent deployability, technology diversity, resilience, scalability, and organizational alignment.',
-      category: 'Software Architecture',
-      difficulty: 'hard',
-      correctCount: 2,
-      totalAttempts: 4,
-    },
-    {
-      id: '3',
-      question: 'What are the ACID properties in database transactions?',
-      answer: 'Atomicity, Consistency, Isolation, and Durability.',
-      category: 'Database Design',
-      difficulty: 'medium',
-      correctCount: 5,
-      totalAttempts: 6,
-    }
-  ],
+  tasks: [],
+  meetings: [],
+  flashcards: [],
   emails: [],
   socialPosts: [],
   isZoomConnected: false,

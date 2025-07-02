@@ -206,173 +206,50 @@ class ZoomApiService {
     }
   }
 
-  private async makeRequest(endpoint: string, options: any = {}): Promise<any> {
-    if (!this.accessToken) {
-      throw new Error('Not authenticated with Zoom');
+  private async makeRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
+    const accessToken = localStorage.getItem('zoom_access_token');
+    
+    if (!accessToken || accessToken.startsWith('mock_access_token_')) {
+      // Return empty results for demo mode or when not connected
+      return this.getEmptyResponse(endpoint);
     }
 
-    // If using mock token, return mock data
-    if (this.accessToken === 'mock_access_token_for_demo') {
-      return this.getMockData(endpoint, options);
-    }
-
-    // Try to refresh token if needed
-    await this.refreshTokenIfNeeded();
+    const url = `${this.baseUrl}${endpoint}`;
+    const headers = {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
 
     try {
-      const response = await axios({
-        method: options.method || 'GET',
-        url: `${this.baseUrl}${endpoint}`,
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
-          ...options.headers
-        },
-        data: options.body,
-        params: options.params
+      const response = await fetch(url, {
+        ...options,
+        headers,
       });
-      
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        // Token expired, try to refresh
-        const refreshed = await this.refreshTokenIfNeeded();
-        if (refreshed) {
-          // Retry with new token
-          const response = await axios({
-            method: options.method || 'GET',
-            url: `${this.baseUrl}${endpoint}`,
-            headers: {
-              'Authorization': `Bearer ${this.accessToken}`,
-              'Content-Type': 'application/json',
-              ...options.headers
-            },
-            data: options.body,
-            params: options.params
-          });
-          
-          return response.data;
-        }
+
+      if (!response.ok) {
+        throw new Error(`Zoom API error: ${response.status} ${response.statusText}`);
       }
-      
+
+      return await response.json();
+    } catch (error) {
+      console.error('Zoom API request failed:', error);
       throw error;
     }
   }
 
-  private getMockData(endpoint: string, options: any = {}): any {
-    // Return mock data for demo purposes
+  private getEmptyResponse(endpoint: string): any {
+    // Return appropriate empty responses based on endpoint
     if (endpoint === '/users/me') {
-      return {
-        id: 'mock_user_id',
-        first_name: 'Demo',
-        last_name: 'User',
-        email: 'demo@example.com'
-      };
+      return null; // No user data when not connected
     }
 
     if (endpoint.includes('/meetings')) {
-      if (endpoint.includes('type=live')) {
-        return {
-          meetings: [
-            {
-              id: 'mock_meeting_live_1',
-              topic: 'Demo Team Standup (Live)',
-              start_time: new Date().toISOString(),
-              duration: 30,
-              status: 'started',
-              join_url: 'https://zoom.us/j/mock123456',
-              host_id: 'mock_user_id'
-            }
-          ]
-        };
-      }
-      
-      return {
-        meetings: [
-          {
-            id: 'mock_meeting_1',
-            topic: 'Demo Team Standup',
-            start_time: new Date().toISOString(),
-            duration: 30,
-            status: 'scheduled',
-            join_url: 'https://zoom.us/j/mock123456',
-            host_id: 'mock_user_id'
-          },
-          {
-            id: 'mock_meeting_2',
-            topic: 'Product Review Meeting',
-            start_time: new Date(Date.now() + 3600000).toISOString(),
-            duration: 60,
-            status: 'scheduled',
-            join_url: 'https://zoom.us/j/mock789012',
-            host_id: 'mock_user_id'
-          }
-        ]
-      };
-    }
-
-    if (endpoint.includes('/metrics/meetings') && endpoint.includes('/participants')) {
-      return {
-        participants: [
-          {
-            id: 'participant1',
-            user_id: 'user1',
-            name: 'John Doe',
-            user_email: 'john@example.com',
-            join_time: new Date(Date.now() - 300000).toISOString(),
-            duration: 300
-          },
-          {
-            id: 'participant2',
-            user_id: 'user2',
-            name: 'Sarah Smith',
-            user_email: 'sarah@example.com',
-            join_time: new Date(Date.now() - 280000).toISOString(),
-            duration: 280
-          }
-        ]
-      };
+      return { meetings: [] };
     }
 
     if (endpoint.includes('/recordings')) {
-      return {
-        recording_files: [
-          {
-            id: 'recording1',
-            meeting_id: endpoint.split('/')[2],
-            recording_start: new Date(Date.now() - 3600000).toISOString(),
-            recording_end: new Date(Date.now() - 3540000).toISOString(),
-            file_type: 'MP4',
-            file_size: 1024000,
-            play_url: 'https://zoom.us/rec/play/mock123',
-            download_url: 'https://zoom.us/rec/download/mock123'
-          },
-          {
-            id: 'recording2',
-            meeting_id: endpoint.split('/')[2],
-            recording_start: new Date(Date.now() - 3600000).toISOString(),
-            recording_end: new Date(Date.now() - 3540000).toISOString(),
-            file_type: 'TRANSCRIPT',
-            file_size: 10240,
-            play_url: 'https://zoom.us/rec/play/mock123-transcript',
-            download_url: 'https://zoom.us/rec/download/mock123-transcript'
-          }
-        ]
-      };
-    }
-
-    // If it's a POST request to create a meeting
-    if (endpoint === '/users/me/meetings' && options.method === 'POST') {
-      const body = options.body ? JSON.parse(options.body) : {};
-      return {
-        id: `mock_meeting_${Date.now()}`,
-        topic: body.topic || 'New Meeting',
-        start_time: body.start_time || new Date().toISOString(),
-        duration: body.duration || 60,
-        status: 'scheduled',
-        join_url: `https://zoom.us/j/mock${Math.random().toString().substr(2, 9)}`,
-        host_id: 'mock_user_id'
-      };
+      return { meetings: [] };
     }
 
     return {};

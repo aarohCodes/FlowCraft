@@ -63,29 +63,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartTimer, onAddTask, o
     return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
   });
 
-  // Mock meetings for today
-  const todaysMeetings = [
-    { 
-      id: '1',
-      time: '9:00 AM', 
-      title: state.userRole === 'professional' ? 'Team Standup' : 'Study Group Session', 
-      type: 'meeting', 
-      platform: 'zoom',
-      duration: 30,
-      status: 'scheduled',
-      isAutomated: true
-    },
-    { 
-      id: '2',
-      time: '2:00 PM', 
-      title: state.userRole === 'professional' ? 'Client presentation' : 'Project Review', 
-      type: 'meeting', 
-      platform: 'google-meet',
-      duration: 60,
-      status: 'scheduled',
-      isAutomated: false
-    },
-  ];
+  // Get today's meetings from state
+  const todaysMeetings = state.meetings.filter(meeting => {
+    const meetingDate = new Date(meeting.date);
+    meetingDate.setHours(0, 0, 0, 0);
+    return meetingDate.getTime() === today.getTime();
+  }).map(meeting => ({
+    id: meeting.id,
+    time: new Date(meeting.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    title: meeting.title,
+    type: 'meeting' as const,
+    platform: 'zoom' as const, // Default platform
+    duration: meeting.duration,
+    status: meeting.status,
+    isAutomated: false
+  }));
 
   // Combine and sort today's schedule
   const todaysSchedule = [
@@ -97,12 +89,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartTimer, onAddTask, o
       id: task.id,
       time: task.dueDate ? new Date(task.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'All day',
       title: task.title,
-      type: 'task',
+      type: 'task' as const,
       priority: task.priority,
       completed: task.completed,
       category: task.category,
       description: task.description,
-      isAutomated: Math.random() > 0.5, // Mock automation indicator
+      isAutomated: false,
       sortTime: task.dueDate ? new Date(task.dueDate).getTime() : new Date().getTime()
     }))
   ].sort((a, b) => a.sortTime - b.sortTime);
