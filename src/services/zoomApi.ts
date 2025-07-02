@@ -96,9 +96,7 @@ class ZoomApiService {
 
   // Get the correct redirect URI based on environment
   private getRedirectUri(): string {
-    const currentOrigin = window.location.origin;
-    const configuredUri = import.meta.env.VITE_ZOOM_REDIRECT_URI;
-    return configuredUri || `${currentOrigin}/zoom/callback`;
+    return 'https://flowcraft-six.vercel.app/api/zoom/auth';
   }
 
   // OAuth 2.0 Authorization
