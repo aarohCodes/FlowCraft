@@ -103,39 +103,21 @@ class ZoomApiService {
 
   // OAuth 2.0 Authorization
   async authorize(): Promise<string> {
-    const clientId = import.meta.env.VITE_ZOOM_CLIENT_ID;
-    const redirectUri = encodeURIComponent(this.getRedirectUri());
-    const scope = encodeURIComponent('meeting:read meeting:write recording:read user:read');
-    
-    return `https://zoom.us/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+    try {
+      const response = await axios.get('/api/zoom/auth');
+      return response.data.authUrl;
+    } catch (error) {
+      console.error('Error getting auth URL:', error);
+      throw error;
+    }
   }
 
   async exchangeCodeForToken(code: string): Promise<void> {
     try {
-      const clientId = import.meta.env.VITE_ZOOM_CLIENT_ID;
-      const clientSecret = import.meta.env.VITE_ZOOM_CLIENT_SECRET;
-      const redirectUri = this.getRedirectUri();
-
-      const response = await axios.post('https://zoom.us/oauth/token', 
-        queryString.stringify({
-          grant_type: 'authorization_code',
-          code,
-          redirect_uri: redirectUri
-        }), 
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`
-          }
-        }
-      );
+      const response = await axios.post('/api/zoom/auth', { code });
       
       if (response.data.access_token) {
         this.accessToken = response.data.access_token;
-        
-        if (response.data.refresh_token) {
-          this.refreshToken = response.data.refresh_token;
-        }
         
         if (response.data.expires_in) {
           this.tokenExpiry = Date.now() + (response.data.expires_in * 1000);
@@ -322,6 +304,10 @@ class ZoomApiService {
   // Get meeting transcript (if available)
   async getMeetingTranscript(meetingId: string): Promise<string | null> {
     try {
+      if (!this.accessToken) {
+        throw new Error('No access token available');
+      }
+
       // For demo purposes, return mock transcript
       if (this.accessToken === 'mock_access_token_for_demo') {
         return `
@@ -338,19 +324,13 @@ class ZoomApiService {
         `;
       }
 
-      const recordings = await this.getMeetingRecordings(meetingId);
-      const transcriptFile = recordings.find(r => r.file_type === 'TRANSCRIPT');
-      
-      if (transcriptFile) {
-        const response = await axios.get(transcriptFile.download_url, {
-          headers: {
-            'Authorization': `Bearer ${this.accessToken}`
-          }
-        });
-        return response.data;
-      }
-      
-      return null;
+      const response = await axios.get(`/api/zoom/transcript?meetingId=${meetingId}`, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+
+      return response.data.transcript;
     } catch (error) {
       console.error('Error fetching transcript:', error);
       return null;

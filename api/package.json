@@ -1,0 +1,13 @@
+{
+  "name": "flowcraft-api",
+  "version": "1.0.0",
+  "description": "API endpoints for FlowCraft app",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "query-string": "^8.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+} 

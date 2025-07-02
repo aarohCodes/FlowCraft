@@ -151,6 +151,25 @@ class VideoMeetingApiService {
   // Exchange authorization code for access token
   async exchangeCodeForToken(platform: string, code: string): Promise<void> {
     try {
+      // Handle Zoom separately using secure backend
+      if (platform === 'zoom') {
+        const response = await axios.post('/api/zoom/auth', { code });
+        if (response.data.access_token) {
+          this.accessTokens.set(platform, response.data.access_token);
+          this.connectedPlatforms.add(platform);
+          
+          if (response.data.expires_in) {
+            const expiryTime = Date.now() + (response.data.expires_in * 1000);
+            this.tokenExpiry.set(platform, expiryTime);
+          }
+          
+          this.saveConnections();
+          return;
+        }
+        throw new Error('Failed to exchange Zoom authorization code');
+      }
+
+      // Handle other platforms
       const redirectUri = this.getRedirectUri(platform);
       let tokenEndpoint: string;
       let clientId: string;
@@ -158,16 +177,6 @@ class VideoMeetingApiService {
       let params: Record<string, string>;
 
       switch (platform) {
-        case 'zoom':
-          tokenEndpoint = 'https://zoom.us/oauth/token';
-          clientId = import.meta.env.VITE_ZOOM_CLIENT_ID;
-          clientSecret = import.meta.env.VITE_ZOOM_CLIENT_SECRET;
-          params = {
-            grant_type: 'authorization_code',
-            code,
-            redirect_uri: redirectUri
-          };
-          break;
         case 'google-meet':
           tokenEndpoint = 'https://oauth2.googleapis.com/token';
           clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -208,14 +217,9 @@ class VideoMeetingApiService {
           throw new Error(`Unsupported platform: ${platform}`);
       }
 
-      // For Zoom, we need to use Basic Auth
       const headers: Record<string, string> = {
         'Content-Type': 'application/x-www-form-urlencoded'
       };
-      
-      if (platform === 'zoom') {
-        headers['Authorization'] = `Basic ${btoa(`${clientId}:${clientSecret}`)}`;
-      }
 
       const response = await axios.post(tokenEndpoint, queryString.stringify(params), { headers });
       
@@ -259,6 +263,12 @@ class VideoMeetingApiService {
       return false;
     }
     
+    // Handle Zoom separately - requires re-authentication
+    if (platform === 'zoom') {
+      console.log('Zoom token expired, requires re-authentication');
+      return false;
+    }
+    
     try {
       let tokenEndpoint: string;
       let clientId: string;
@@ -266,15 +276,6 @@ class VideoMeetingApiService {
       let params: Record<string, string>;
 
       switch (platform) {
-        case 'zoom':
-          tokenEndpoint = 'https://zoom.us/oauth/token';
-          clientId = import.meta.env.VITE_ZOOM_CLIENT_ID;
-          clientSecret = import.meta.env.VITE_ZOOM_CLIENT_SECRET;
-          params = {
-            grant_type: 'refresh_token',
-            refresh_token: refreshToken
-          };
-          break;
         case 'google-meet':
           tokenEndpoint = 'https://oauth2.googleapis.com/token';
           clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
