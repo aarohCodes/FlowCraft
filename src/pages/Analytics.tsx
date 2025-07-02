@@ -233,40 +233,59 @@ export const Analytics: React.FC = () => {
           AI Tools Performance
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {state.tools.filter(tool => tool.isActive).map((tool, index) => (
-            <motion.div
-              key={tool.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8 + index * 0.1 }}
-              className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-            >
-              <div className="flex items-center space-x-3 mb-3">
-                <Zap className="w-5 h-5 text-primary-500" />
-                <span className="font-medium text-gray-900 dark:text-white">{tool.name}</span>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Usage</span>
-                  <span className="text-gray-900 dark:text-white font-medium">
-                    {Math.floor(Math.random() * 100) + 50} times
-                  </span>
+          {state.tools.filter(tool => tool.isActive).map((tool, index) => {
+            const hoursSinceLastUse = tool.lastUsed 
+              ? Math.floor((Date.now() - new Date(tool.lastUsed).getTime()) / (1000 * 60 * 60))
+              : null;
+            
+            return (
+              <motion.div
+                key={tool.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+                className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+              >
+                <div className="flex items-center space-x-3 mb-3">
+                  <Zap className="w-5 h-5 text-primary-500" />
+                  <span className="font-medium text-gray-900 dark:text-white">{tool.name}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Efficiency</span>
-                  <span className="text-green-600 dark:text-green-400 font-medium">
-                    {Math.floor(Math.random() * 20) + 80}%
-                  </span>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Usage</span>
+                    <span className="text-gray-900 dark:text-white font-medium">
+                      {tool.usageCount} times
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Efficiency</span>
+                    <span className="text-green-600 dark:text-green-400 font-medium">
+                      {tool.efficiency}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Success Rate</span>
+                    <span className="text-blue-600 dark:text-blue-400 font-medium">
+                      {tool.totalOperations > 0 ? Math.round((tool.successfulOperations / tool.totalOperations) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Last Used</span>
+                    <span className="text-gray-900 dark:text-white font-medium">
+                      {hoursSinceLastUse === null 
+                        ? 'Never' 
+                        : hoursSinceLastUse < 1 
+                          ? 'Just now' 
+                          : hoursSinceLastUse < 24 
+                            ? `${hoursSinceLastUse} hours ago` 
+                            : `${Math.floor(hoursSinceLastUse / 24)} days ago`
+                      }
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Last Used</span>
-                  <span className="text-gray-900 dark:text-white font-medium">
-                    {Math.floor(Math.random() * 24)} hours ago
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
     </div>

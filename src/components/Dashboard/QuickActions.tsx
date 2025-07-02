@@ -211,6 +211,14 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onStartTimer, onAddT
       priority: 'secondary',
       description: 'AI research help',
       action: () => {
+        // Track tool usage
+        dispatch({ 
+          type: 'TRACK_TOOL_USAGE', 
+          payload: { 
+            toolId: 'research-assistant', 
+            success: Math.random() > 0.15 // 85% success rate
+          } 
+        });
         console.log('Navigate to research assistant');
       },
     },
@@ -224,6 +232,14 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onStartTimer, onAddT
       priority: 'secondary',
       description: 'Track learning',
       action: () => {
+        // Track tool usage
+        dispatch({ 
+          type: 'TRACK_TOOL_USAGE', 
+          payload: { 
+            toolId: 'quiz-generator', 
+            success: Math.random() > 0.1 // 90% success rate
+          } 
+        });
         console.log('Navigate to study analytics');
       },
     },
@@ -237,6 +253,14 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onStartTimer, onAddT
       priority: 'secondary',
       description: 'Study groups',
       action: () => {
+        // Track tool usage
+        dispatch({ 
+          type: 'TRACK_TOOL_USAGE', 
+          payload: { 
+            toolId: 'meeting-scheduler', 
+            success: Math.random() > 0.05 // 95% success rate
+          } 
+        });
         console.log('Navigate to group meeting tools');
       },
     },
@@ -252,6 +276,14 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onStartTimer, onAddT
       description: 'Advanced AI',
       action: () => {
         if (isFeatureUnlocked('AI Assistant')) {
+          // Track tool usage
+          dispatch({ 
+            type: 'TRACK_TOOL_USAGE', 
+            payload: { 
+              toolId: 'email-assistant', 
+              success: Math.random() > 0.12 // 88% success rate
+            } 
+          });
           const event = new CustomEvent('navigate-to-tools');
           window.dispatchEvent(event);
         } else {

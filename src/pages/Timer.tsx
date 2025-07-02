@@ -7,7 +7,10 @@ import {
   ArrowLeft,
   Clock,
   Target,
-  CheckCircle
+  CheckCircle,
+  Edit3,
+  Check,
+  X
 } from 'lucide-react';
 
 interface TimerProps {
@@ -19,6 +22,9 @@ export const Timer: React.FC<TimerProps> = ({ onBack }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [initialTime, setInitialTime] = useState(25 * 60);
   const [sessionType, setSessionType] = useState<'work' | 'break'>('work');
+  const [showCustomTime, setShowCustomTime] = useState(false);
+  const [customMinutes, setCustomMinutes] = useState('25');
+  const [customSeconds, setCustomSeconds] = useState('0');
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -63,6 +69,27 @@ export const Timer: React.FC<TimerProps> = ({ onBack }) => {
     const newTime = type === 'work' ? 25 * 60 : 5 * 60;
     setTimeLeft(newTime);
     setInitialTime(newTime);
+    setCustomMinutes(type === 'work' ? '25' : '5');
+    setCustomSeconds('0');
+  };
+
+  const handleCustomTimeSubmit = () => {
+    const minutes = parseInt(customMinutes) || 0;
+    const seconds = parseInt(customSeconds) || 0;
+    const totalSeconds = minutes * 60 + seconds;
+    
+    if (totalSeconds > 0) {
+      setIsRunning(false);
+      setTimeLeft(totalSeconds);
+      setInitialTime(totalSeconds);
+      setShowCustomTime(false);
+    }
+  };
+
+  const handleCustomTimeCancel = () => {
+    setCustomMinutes(Math.floor(initialTime / 60).toString());
+    setCustomSeconds((initialTime % 60).toString());
+    setShowCustomTime(false);
   };
 
   const progress = ((initialTime - timeLeft) / initialTime) * 100;
@@ -120,6 +147,67 @@ export const Timer: React.FC<TimerProps> = ({ onBack }) => {
               </button>
             </div>
           </div>
+
+          {/* Custom Time Input */}
+          {showCustomTime && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-8 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Set Custom Time
+              </h3>
+              <div className="flex items-center justify-center space-x-4 mb-4">
+                <div className="flex flex-col items-center">
+                  <label className="text-sm text-gray-600 dark:text-gray-400 mb-2">Minutes</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="999"
+                    value={customMinutes}
+                    onChange={(e) => setCustomMinutes(e.target.value)}
+                    className="w-20 px-3 py-2 text-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="25"
+                  />
+                </div>
+                <div className="text-2xl font-bold text-gray-400">:</div>
+                <div className="flex flex-col items-center">
+                  <label className="text-sm text-gray-600 dark:text-gray-400 mb-2">Seconds</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={customSeconds}
+                    onChange={(e) => setCustomSeconds(e.target.value)}
+                    className="w-20 px-3 py-2 text-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-center space-x-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCustomTimeSubmit}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  <Check size={16} />
+                  <span>Set Time</span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCustomTimeCancel}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  <X size={16} />
+                  <span>Cancel</span>
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
 
           {/* Timer Display */}
           <div className="relative mb-12">
@@ -190,6 +278,22 @@ export const Timer: React.FC<TimerProps> = ({ onBack }) => {
               <RotateCcw size={20} />
               <span>Reset</span>
             </motion.button>
+
+            {!isRunning && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setCustomMinutes(Math.floor(initialTime / 60).toString());
+                  setCustomSeconds((initialTime % 60).toString());
+                  setShowCustomTime(!showCustomTime);
+                }}
+                className="flex items-center space-x-2 px-6 py-4 bg-blue-100 dark:bg-blue-700/50 text-blue-700 dark:text-blue-300 rounded-xl hover:bg-blue-200 dark:hover:bg-blue-600/70 transition-colors font-semibold"
+              >
+                <Edit3 size={20} />
+                <span>Custom Time</span>
+              </motion.button>
+            )}
           </div>
 
           {/* Session Info */}
@@ -199,7 +303,7 @@ export const Timer: React.FC<TimerProps> = ({ onBack }) => {
               <div className="text-left">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Session</p>
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  {sessionType === 'work' ? '25 min' : '5 min'}
+                  {formatTime(initialTime)}
                 </p>
               </div>
             </div>

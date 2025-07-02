@@ -6,6 +6,11 @@ export interface Tool {
   icon: string;
   isActive: boolean;
   features: string[];
+  usageCount: number;
+  lastUsed?: Date;
+  efficiency: number; // Percentage of successful operations
+  totalOperations: number;
+  successfulOperations: number;
 }
 
 export interface Task {

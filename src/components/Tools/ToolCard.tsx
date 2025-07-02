@@ -32,7 +32,7 @@ const iconComponents = {
 const categoryColors = {
   education: 'from-primary-500 to-primary-600',
   productivity: 'from-secondary-500 to-secondary-600',
-  social: 'from-orange-500 to-orange-600',
+  email: 'from-blue-500 to-blue-600',
 };
 
 export const ToolCard: React.FC<ToolCardProps> = ({ tool, index }) => {
@@ -41,6 +41,20 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, index }) => {
 
   const handleToggle = () => {
     dispatch({ type: 'TOGGLE_TOOL', payload: tool.id });
+  };
+
+  const handleConfigure = () => {
+    // Track tool usage when configured/used
+    dispatch({ 
+      type: 'TRACK_TOOL_USAGE', 
+      payload: { 
+        toolId: tool.id, 
+        success: Math.random() > 0.1 // 90% success rate for demo
+      } 
+    });
+    
+    // Simulate tool configuration/usage
+    console.log(`Configuring ${tool.name}...`);
   };
 
   return (
@@ -109,6 +123,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, index }) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg text-sm font-medium hover:from-primary-600 hover:to-secondary-600 transition-all duration-200"
+            onClick={handleConfigure}
           >
             Configure
           </motion.button>
