@@ -51,6 +51,22 @@ export default async function handler(req, res) {
       });
     }
   } else if (req.method === 'GET') {
+    // Debug output for environment variables if ?debug=1
+    if (req.query && req.query.debug === '1') {
+      const clientId = process.env.ZOOM_CLIENT_ID;
+      const clientSecret = process.env.ZOOM_CLIENT_SECRET;
+      const redirectUri = process.env.ZOOM_REDIRECT_URI;
+      // Log to serverless logs
+      console.log('ZOOM_CLIENT_ID:', clientId);
+      console.log('ZOOM_CLIENT_SECRET:', clientSecret);
+      console.log('ZOOM_REDIRECT_URI:', redirectUri);
+      // Return masked values for debugging
+      return res.status(200).json({
+        ZOOM_CLIENT_ID: clientId,
+        ZOOM_CLIENT_SECRET: clientSecret ? clientSecret.slice(0, 4) + '...' : undefined,
+        ZOOM_REDIRECT_URI: redirectUri
+      });
+    }
     // If Zoom redirected back with a code, handle the token exchange and redirect to frontend
     if (req.query && req.query.code) {
       try {
